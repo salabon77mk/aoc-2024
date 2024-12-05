@@ -1,0 +1,153 @@
+fn solve_part_2(input: &str) -> u32 {
+    // iterate over our x coordinates
+    let xmas_sets = parse_input_into_set_coordinates(input);
+
+    let mut found_xmas = 0;
+    // do the m's
+   // let found_xmas_ms = find_ms(&xmas_sets.m, &xmas_sets, &mut String::from("XM"));
+    let found_xmas_ss = find_ss(&xmas_sets.s, &xmas_sets, &mut String::from("MAS"));
+
+    for m_coordinate in &xmas_sets.m {
+        let found_m_diagonal_down = recursive_bullshit(&xmas_sets, &m_coordinate, &(1, 1), &mut String::from("XM"));
+        if !found_m_diagonal_down {
+            continue
+        }
+        // find a SINGLE matching M in the top right, bottom right, bottom left. If we found more than one, get outta here
+
+        let corner_ms = get_corner_ms(m_coordinate, &xmas_sets, &'M');
+        if corner_ms.len() == 1 {
+            let direction = &corner_ms[0];
+            // bottom left, we must search diagonal up right
+            match direction {
+                BottomLeft => {
+                    let bottom_left = (m_coordinate.0 + 2, m_coordinate.1);
+                    if recursive_bullshit(&xmas_sets, &bottom_left, &(-1, 1), &mut String::from("XM")) {
+                        found_xmas += 1;
+                    }
+                }
+                TopRight => {
+                    let top_right = (m_coordinate.0, m_coordinate.1 + 2);
+                    if recursive_bullshit(&xmas_sets, &top_right, &(1, -1), &mut String::from("XM")) {
+                        found_xmas +=1;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    found_xmas + found_xmas_ss
+}
+
+fn reverse_recursive_bullshit(xmas_sets: &XmasSets,
+                              current_coordinate: &(i32, i32),
+                              coordinate_direction: &(i32, i32),
+                              xmas_progress: &mut String) -> bool {
+    if xmas_progress == "M" {
+        return true
+    }
+
+    let last_char = xmas_progress.chars().last().unwrap();
+
+    let next_coordinate = {
+        (current_coordinate.0 + coordinate_direction.0,
+         current_coordinate.1 + coordinate_direction.1)
+    };
+
+    if let Some(true) = xmas_sets.check_previous_coordinate(&last_char, &next_coordinate) {
+        if let Some(last_char) = xmas_progress.pop() {
+            reverse_recursive_bullshit(xmas_sets, &next_coordinate, coordinate_direction, xmas_progress)
+        } else {
+            false
+        }
+    } else {
+        false
+    }
+}
+
+// fn find_ms(letter_set: &Vec<(i32, i32)>, xmas_sets: &XmasSets, xmas_progress: &mut String) -> u32 {
+//     let mut found_xmas = 0;
+//
+//     for m_coordinate in letter_set {
+//         let found_m_diagonal_down = recursive_bullshit(&xmas_sets, &m_coordinate, &(1, 1), &mut String::from("XM"));
+//         if !found_m_diagonal_down {
+//             continue
+//         }
+//         // find a SINGLE matching M in the top right, bottom right, bottom left. If we found more than one, get outta here
+//         let corner_ms = get_corner_ms(m_coordinate, &xmas_sets);
+//         if corner_ms.len() == 1 {
+//             let direction = &corner_ms[0];
+//             // bottom left, we must search diagonal up right
+//             match direction {
+//                 BottomLeft => {
+//                     let bottom_left = (m_coordinate.0 + 2, m_coordinate.1);
+//                     if recursive_bullshit(&xmas_sets, &bottom_left, &(-1, 1), xmas_progress) {
+//                         found_xmas += 1;
+//                     }
+//                 }
+//                 TopRight => {
+//                     let top_right = (m_coordinate.0, m_coordinate.1 + 2);
+//                     if recursive_bullshit(&xmas_sets, &top_right, &(1, -1), xmas_progress) {
+//                         found_xmas +=1;
+//                     }
+//                 }
+//                 _ => {}
+//             }
+//
+//             // top right, we must search diagonal down left
+//         }
+//
+//     }
+//     found_xmas
+// }
+
+fn find_ss(letter_set: &Vec<(i32, i32)>, xmas_sets: &XmasSets, xmas_progress: &mut String) -> u32 {
+    let mut found_xmas = 0;
+
+    for m_coordinate in letter_set {
+        let found_s_diagonal_down = reverse_recursive_bullshit(&xmas_sets, &m_coordinate, &(1, 1), &mut String::from("MAS"));
+        if !found_s_diagonal_down {
+            continue
+        }
+        // find a SINGLE matching M in the top right, bottom right, bottom left. If we found more than one, get outta here
+        let corner_ms = get_corner_ms(m_coordinate, &xmas_sets, &'S');
+        if corner_ms.len() == 1 {
+            let direction = &corner_ms[0];
+            // bottom left, we must search diagonal up right
+            match direction {
+                BottomLeft => {
+                    let bottom_left = (m_coordinate.0 + 2, m_coordinate.1);
+                    if reverse_recursive_bullshit(&xmas_sets, &bottom_left, &(-1, 1), xmas_progress) {
+                        found_xmas += 1;
+                    }
+                }
+                TopRight => {
+                    let top_right = (m_coordinate.0, m_coordinate.1 + 2);
+                    if reverse_recursive_bullshit(&xmas_sets, &top_right, &(1, -1), xmas_progress) {
+                        found_xmas +=1;
+                    }
+                }
+                _ => {}
+            }
+
+            // top right, we must search diagonal down left
+        }
+
+    }
+    found_xmas
+}
+
+fn get_corner_ms(start_coordinate: &(i32, i32), xmas_sets: &XmasSets, corner_char: &char) -> Vec<Direction> {
+    let mut found_m_coordinates: Vec<Direction> = Vec::new();
+
+    let top_right = (start_coordinate.0, start_coordinate.1 + 2);
+    if xmas_sets.check_coordinate(corner_char, &top_right) {
+        found_m_coordinates.push(TopRight);
+    }
+
+    let bottom_left = (start_coordinate.0 + 2, start_coordinate.1);
+    if xmas_sets.check_coordinate(corner_char, &bottom_left) {
+        found_m_coordinates.push(BottomLeft);
+    }
+
+    found_m_coordinates
+}
