@@ -1,0 +1,44 @@
+fn get_trail_scores(maze: &Maze, current_height: i32, current_position: &(i32, i32)) -> u32 {
+    println!("{:?} :: {}", current_position, current_height);
+    // Base case: found a valid path to 9
+    if current_height == 9 {
+        return 1;
+    }
+
+    let DIRECTIONS = [
+        Direction::Up(-1, 0),
+        Direction::Down(1, 0),
+        Direction::Left(0, -1),
+        Direction::Right(0, 1)
+    ];
+
+    let mut total = 0;
+    println!("PRE-TOTAL {}", total);
+
+    for direction in DIRECTIONS {
+        let (row, col) = *current_position;
+        let new_position = match direction {
+            Direction::Up(row_offset, col_offset) |
+            Direction::Down(row_offset, col_offset) |
+            Direction::Left(row_offset, col_offset) |
+            Direction::Right(row_offset, col_offset) => {
+                (row + row_offset, col + col_offset)
+            }
+        };
+
+        if let Some(height) = maze.get_height_at(&new_position) {
+            let diff = height - current_height;
+            if diff == 1 {
+                let score = get_trail_scores(maze, height, &new_position);
+                println!("SCORE: {}", score);
+                total += score;
+            }
+        }
+    }
+
+    println!("POST-TOTAL {}", total);
+
+    total
+}
+
+gets ALL possible trails, but we just need the total reachable

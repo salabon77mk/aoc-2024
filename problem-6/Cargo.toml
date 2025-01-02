@@ -1,0 +1,17 @@
+[package]
+name = "problem-6"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = 'abort'
+debug = false
+incremental = false
+# run this RUSTFLAGS="-C target-cpu=apple-m3" cargo run --release -p problem-6
+
+
+
+[dependencies]

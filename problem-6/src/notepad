@@ -1,0 +1,23 @@
+        while location != &Location::Void {
+            let lookahead_position = guard.get_next_position();
+            let next_location = maze.get_location(&lookahead_position);
+
+            // Check for bump into our test obstruction before any movement or rotation
+            if lookahead_position == *happy_position {
+                bumped_happy_position += 1;
+                if bumped_happy_position == 2 {
+                    looping_obstructions.insert(lookahead_position);
+                    bumped_happy_position = 0;
+                    println!("BUMPED {:?}", lookahead_position);
+                    break;
+                }
+            }
+
+            guard.update_direction(next_location);
+            if maze.get_location(&guard.get_next_position()) != &Location::Obstruction {
+                guard.go();
+            }
+
+            location = maze.get_location(&guard.position);
+            println!("{:?} :: {:?} :: {:?} :: {:?} :: {:?} :: {:?}", next_location, lookahead_position, guard.position, guard.direction, happy_position, bumped_happy_position);//, happy_position);
+        }

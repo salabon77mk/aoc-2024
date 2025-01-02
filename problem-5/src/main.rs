@@ -99,7 +99,7 @@ fn solve_part_2(rules: &str, order: &str) -> u32 {
         .sum()
 }
 
-///
+/// IDEA: It's like backwards insertion sort
 /// Base case: If the order vec is one, it's in the right position and can just return that
 ///
 /// If the number is in the correct order, we append it to the solution vector, use our window as the new
